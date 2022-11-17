@@ -4,10 +4,6 @@
 char str[10];
 char size;
 
-void longCad() {
-	for(size = 0; str[size]; ++size);
-}
-
 void solve(char state, char deltaPot) {
 	if(str[deltaPot]) {
 		printf("\tδ(q%d, %c) -%d-> ", state, str[deltaPot], deltaPot);
@@ -48,7 +44,7 @@ int main(int argc, char const *argv[]) {
 	fflush(stdin);
 	scanf("%s", str);
 
-	longCad();
+	for(size = 0; str[size]; ++size);
 
 	printf("\n");
 	solve(0, 0);
