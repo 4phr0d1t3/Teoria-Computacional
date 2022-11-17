@@ -9,24 +9,38 @@ void longCad() {
 }
 
 void solve(char state, char deltaPot) {
-	if (str[deltaPot]) {
-		printf(" -%d-> q%d \n δ(q%d, %c)", deltaPot, state, state, str[deltaPot]);
-
+	if(str[deltaPot]) {
+		printf("\tδ(q%d, %c) -%d-> ", state, str[deltaPot], deltaPot);
 		if(state == 0)
-			if (str[deltaPot] == 'b')
+			if(str[deltaPot] == 'b') {
+				printf("q0\n");
 				solve(0, deltaPot+1); // δ(q0, b) -> q0
+			}
 			else if(str[deltaPot] == 'a') {
+				printf("q0\n");
 				solve(0, deltaPot+1); // δ(q0, a) -> q0
+				
+				printf(" Nuevo camino en: -%d-> q1\n", deltaPot);
 				solve(1, deltaPot+1); // δ(q0, a) -> q1
 			}
+			else
+				printf("Ø\n       --- No valido ---\n"); // -> Ø
 		else if(state == 1)
-			if (str[deltaPot] == 'b')
+			if(str[deltaPot] == 'b') {
+				printf("q2\n");
 				solve(2, deltaPot+1); // δ(q1, b) -> q2
+			}
+			else
+				printf("Ø\n       --- No valido ---\n"); // -> Ø
 		else if(state == 2)
-			printf(" -%d-> Ø" , deltaPot+1); // -> Ø
+			printf("Ø\n       --- No valido ---\n"); // -> Ø
 	}
-	// else if(state == 0 || state == 2)
-	// 	printf("\nEs valida\n\n");
+	else if(deltaPot != size)
+		printf(" -%d-> q%d\n", deltaPot, state);
+	else if(state != 0 && state !=2)
+		printf("       --- No valido ---\n");
+	else
+		printf("\t--- Valido ---\n");
 }
 
 int main(int argc, char const *argv[]) {
@@ -38,7 +52,6 @@ int main(int argc, char const *argv[]) {
 
 	printf("\n");
 	solve(0, 0);
-	printf("\n");
 
 	return 0;
 }
