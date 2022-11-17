@@ -45,6 +45,6 @@ int main(int argc, char const *argv[]) {
 	printf("\n");
 	solve(0, 0);
 
-    printf("Caminos validos = %d", num);
+    printf("Caminos validos = %d\n", num);
 	return 0;
 }
