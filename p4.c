@@ -8,23 +8,23 @@ void solve(char state, char deltaPot) {
 		printf(" -%d-> q%d \n δ(q%d, %c)", deltaPot, state, state, str[deltaPot]);
 
 		switch (str[deltaPot]) {
-		case 'a':
-			if(state == 0) { // q0
-				solve(0, deltaPot+1);
-				printf("\n\tNuevo camino: ");
-				solve(1, deltaPot+1);
-			}
-			else if (state == 1) // q1
-				solve(2, deltaPot+1);
-		break;
+			case 'a':
+				if(state == 0) {
+					solve(0, deltaPot+1); // δ(q0, a) -> q0
+					printf("\n\tNuevo camino: ");
+					solve(1, deltaPot+1); // δ(q0, a) -> q1
+				}
+				else if (state == 1)
+					solve(2, deltaPot+1); // δ(q1, a) -> q2
+			break;
 
-		case 'b': 
-			if(state == 0) // q0
-				solve(0, deltaPot+1);
-		break;
+			case 'b':
+				if(state == 0)
+					solve(0, deltaPot+1); // δ(q0, b) -> q0
+			break;
 
-		default:
-			printf(" -> Ø\n----- No es valida -----\n");
+			default:
+				printf(" -> Ø\n----- No es valida -----\n"); // -> Ø
 		}
 	}
 	else if(state == 0 || state == 2) // q0 || q2
