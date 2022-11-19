@@ -5,3 +5,4 @@ Este repositorio está conformado por las prácticas de codificación de los tem
 	p2.c: Operaciones con lenguajes
 	p3.c: Automatas Finitos Deterministas (AFD)
 	p4.c: Automatas Finitos No Deterministas (AFN)
+	p5.c: Automatas Finitos No Deterministas (AFN) dinamico
