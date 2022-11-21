@@ -4,9 +4,9 @@
 char str[10], *path;
 char size, num = 0;
 
-char *states, *sigmaM, s, *fS;
+char *states, *sigmaM, s, *fS, **deltaTab;
 
-void getFromFile() {
+char* getFromFile() {
 	FILE *textFile;
 	char *text;
 	long numbytes;
@@ -22,22 +22,28 @@ void getFromFile() {
 	fread(text, sizeof(char), numbytes, textFile);
 	fclose(textFile);
 
-	// just for printing
-	for (char i = 0; text[i]; ++i)
-		// if(text[i] != 10 && text[i] != 13)
-		if(text[i] != 10)
-			printf("%d = %c\n", i, text[i]);
+	// Just for printing
+	// for (char i = 0; text[i]; ++i)
+	// 	// if(text[i] != 10 && text[i] != 13)
+	// 	if(text[i] != 10)
+	// 		printf("%d = %c\n", i, text[i]);
+	return text;
+}
 
-// obtencion del agente
+void getAFN() {
+	char *text = getFromFile();
 	char auxSize, aux, i = 0;
+
 // states
 	for (auxSize = 0; text[auxSize] != 10; ++auxSize);
 	auxSize /= 2;
 	states = (char*) malloc((auxSize+1) * sizeof(char));
-	
+
 	for(aux = 0; text[i] != 10; i+=2, ++aux) states[aux] = text[i];
 	states[auxSize] = '\0';
-	printf("states = %s\n", states);
+
+	printf("Estados = %s\n", states);
+
 // alphabet
 	for (auxSize = ++i; text[auxSize] != 10; ++auxSize);
 	auxSize = (auxSize-i)/2;
@@ -46,11 +52,13 @@ void getFromFile() {
 	for(aux = 0; text[i] != 10; i+=2, ++aux) sigmaM[aux] = text[i];
 	sigmaM[auxSize] = '\0';
 
-	printf("alphabet = %s\n", sigmaM);
+	printf("Alfabeto = %s\n", sigmaM);
+
 // initial state
 	s = text[++i];
 
-	printf("initial state = %c\n", s);
+	printf("Estado inicial = %c\n", s);
+
 // final states
 	for(auxSize = (i+=3); text[auxSize] != 10; ++auxSize);
 	auxSize = (auxSize-i)/2;
@@ -59,9 +67,30 @@ void getFromFile() {
 	for(aux = 0; text[i] != 10; i+=2, ++aux) fS[aux] = text[i];
 	fS[auxSize] = '\0';
 
-	printf("final states = %s\n", fS);
+	printf("Estado final = %s\n", fS);
+
 // delta table
-	printf("i = %d\n", i);
+	char x;
+	for (aux = i, x = 0; text[aux]; ++aux) if(text[aux] == 10) ++x;
+
+	char auxDeltaTab[x][3];
+	for(char n = 0, m = 0, aux = ++i; text[aux]; ++aux)
+		if(text[aux] != 13 && text[aux] != ',') {
+			auxDeltaTab[n][m] = text[aux];
+			++m;
+		}
+		else if(text[aux] == 13) {
+			aux++;
+			++n;
+			m = 0;
+		}
+
+	printf("Delta:\n\t");
+	for(char n = 0; n<x; ++n){
+		for(char m = 0; m<3; ++m)
+			printf("%c", auxDeltaTab[n][m]);
+		printf("\n\t");
+	}
 }
 
 // to be changed
@@ -96,14 +125,18 @@ void getFromFile() {
 // }
 
 int main(int argc, char const *argv[]) {
-	printf("Ingrese la cadena a verificar: ");
+	printf("Del AFN con:\n");
+
+	getAFN();
+
+	printf("\nIngrese la cadena a verificar: ");
 	fflush(stdin);
 	scanf("%s", str);
 
 	for(size = 0; str[size]; ++size);
 	path = (char *) malloc(size*(sizeof(char)));
 
-	getFromFile();
+	
 
 	printf("\n");
 	// solve(0, 0);
