@@ -4,6 +4,8 @@
 char str[10], *path;
 char size, num = 0;
 
+char *states, *sigmaM, s, *fS;
+
 void getFromFile() {
 	FILE *textFile;
 	char *text;
@@ -20,7 +22,46 @@ void getFromFile() {
 	fread(text, sizeof(char), numbytes, textFile);
 	fclose(textFile);
 
-	printf("%s", text);
+	// just for printing
+	for (char i = 0; text[i]; ++i)
+		// if(text[i] != 10 && text[i] != 13)
+		if(text[i] != 10)
+			printf("%d = %c\n", i, text[i]);
+
+// obtencion del agente
+	char auxSize, aux, i = 0;
+// states
+	for (auxSize = 0; text[auxSize] != 10; ++auxSize);
+	auxSize /= 2;
+	states = (char*) malloc((auxSize+1) * sizeof(char));
+	
+	for(aux = 0; text[i] != 10; i+=2, ++aux) states[aux] = text[i];
+	states[auxSize] = '\0';
+	printf("states = %s\n", states);
+// alphabet
+	for (auxSize = ++i; text[auxSize] != 10; ++auxSize);
+	auxSize = (auxSize-i)/2;
+
+	sigmaM = (char*) malloc((auxSize+1) * sizeof(char));
+	for(aux = 0; text[i] != 10; i+=2, ++aux) sigmaM[aux] = text[i];
+	sigmaM[auxSize] = '\0';
+
+	printf("alphabet = %s\n", sigmaM);
+// initial state
+	s = text[++i];
+
+	printf("initial state = %c\n", s);
+// final states
+	for(auxSize = (i+=3); text[auxSize] != 10; ++auxSize);
+	auxSize = (auxSize-i)/2;
+
+	fS = (char*) malloc((auxSize+1) * sizeof(char));
+	for(aux = 0; text[i] != 10; i+=2, ++aux) fS[aux] = text[i];
+	fS[auxSize] = '\0';
+
+	printf("final states = %s\n", fS);
+// delta table
+	printf("i = %d\n", i);
 }
 
 // to be changed
