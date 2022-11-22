@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char str[10], *path;
-char size, num = 0;
+char str[100], *path;
+char size, x, num = 0;
 
-char *states, *sigmaM, s, *fS, (*deltaTab)[3];
+char *states, *sigmaM, s, *fS, (*deltaTab)[4];
 
 char* getFromFile() {
 	FILE *textFile;
@@ -30,7 +30,7 @@ char* getFromFile() {
 	return text;
 }
 
-void printAFN(char x) {
+void printAFN() {
 	printf("\nEstados =");
 	for(char i = 0; states[i]; ++i) printf(" %c", states[i]);
 	
@@ -42,12 +42,8 @@ void printAFN(char x) {
 	printf("\nEstado final =");
 	for(char i = 0;fS[i]; ++i) printf(" %c",fS[i]);
 
-	printf("\nDelta:\t");
-	for(char n = 0; n<x; ++n){
-		for(char m = 0; m<3; ++m)
-			printf("%c", deltaTab[n][m]);
-		printf("\n\t");
-	}
+	printf("\nDelta:");
+	for(char n = 0; n<x; ++n) printf("\t%s\n", deltaTab[n]);
 }
 
 char* getInfo(char *text, char *i) {
@@ -76,70 +72,78 @@ void getAFN() {
 	fS = getInfo(text, &i); // final states
 
 	// delta table
-	char x;
-	for (aux = i, x = 0; text[aux]; ++aux) if(text[aux] == 10) ++x;
-	
-	char auxDeltaTab[x][3];
-	for(char n = 0, m = 0, aux = ++i; text[aux]; ++aux)
-		if(text[aux] != 13 && text[aux] != ',') {
+	for (aux = ++i, x = 1; text[aux]; ++aux) if(text[aux] == 10) ++x;
+	char auxDeltaTab[x][4];
+	for(char n = 0, m = 0, aux = i; text[aux]; ++aux)
+		if(text[aux] != 10 && text[aux] != 13 && text[aux] != ',') {
 			auxDeltaTab[n][m] = text[aux];
 			++m;
 		}
 		else if(text[aux] == 13) {
-			aux++;
+			auxDeltaTab[n][3] = '\0';
+			++aux;
 			++n;
 			m = 0;
 		}
 	deltaTab = auxDeltaTab;
-	printAFN(x);
+	printAFN();
 }
 
-// to be changed
-// void solve(char state, char deltaPot) {
-// 	if(str[deltaPot]) {
-// 		if(state == 0) {
-// 			if(str[deltaPot] == 'b') {
-// 				path[deltaPot] = 0;
-// 				solve(0, deltaPot+1); // δ(q0, b) -> q0
-// 			}
-// 			else if(str[deltaPot] == 'a') {
-// 				path[deltaPot] = 0;
-// 				solve(0, deltaPot+1); // δ(q0, a) -> q0
-				
-// 				path[deltaPot] = 1;
-// 				solve(1, deltaPot+1); // δ(q0, a) -> q1
-// 			}
-// 		}
-// 		else if(state == 1)
-// 			if(str[deltaPot] == 'b') {
-// 				path[deltaPot] = 2;
-// 				solve(2, deltaPot+1); // δ(q1, b) -> q2
-// 			}
-// 	}
-// 	else if(deltaPot == size && (state == 0 || state == 2)){
-// 		printf("Camino Valido:\n\t--> q0");
-// 		for(char i = 0; i<size; ++i)
-// 			printf(" -%c-> q%d", str[i], path[i]);
-// 		printf("\n");
-// 		++num;
-// 	}
-// }
+char existsState(char state) {
+	for(char i = 0; i < x; ++i)
+		if(state == deltaTab[i][0])
+			return i;
+	return -1;
+}
+
+char isFinalState(char state) {
+	for(char i = 0; fS[i]; ++i)
+		if(state == fS[i])
+			return 1;
+	return 0;
+}
+
+void solve(char state, char deltaPot) {
+	printf("\n----%c----\n", str[deltaPot]);
+	for(char n = 0; n<x; ++n) printf("\t%s\n", deltaTab[n]);
+	printf("Buscando: %c, %c\n", state, str[deltaPot]);
+
+	if(str[deltaPot]) {
+		for(char aux = 0; aux < x; ++aux) {
+			printf("Probando: %c %c %c\n", deltaTab[aux][0], deltaTab[aux][1], deltaTab[aux][2]);
+			// for(char n = 0; n<x; ++n) printf("\t%s\n", deltaTab[n]);
+
+			if(state == deltaTab[aux][0] && str[deltaPot] == deltaTab[aux][1]) {
+				printf("Encontrado: %c = %c, %c = %c -> %c\n", state, deltaTab[aux][0], str[deltaPot], deltaTab[aux][1], deltaTab[aux][2]);
+				path[deltaPot] = deltaTab[aux][2];
+				// for(char n = 0; n<x; ++n) printf("\t%s\n", deltaTab[n]);
+
+				solve(deltaTab[aux][2], deltaPot + 1);
+			}
+		}
+	}
+	else if(deltaPot == size && isFinalState(state)) {
+		printf("Camino Valido:\n\t--> q%c", s);
+		for(char i = 0; i<size; ++i)
+			printf(" -%c-> q%c", str[i], path[i]);
+		printf("\n");
+		++num;
+	}
+}
 
 int main(int argc, char const *argv[]) {
 	printf("Usando el AFN con:\n");
 	getAFN();
 
-	printf("\nIngrese la cadena a verificar: ");
+	printf("Ingrese la cadena a verificar: ");
 	fflush(stdin);
 	scanf("%s", str);
 
 	for(size = 0; str[size]; ++size);
-	path = (char *) malloc(size*(sizeof(char)));
+	char auxPath[size];
+	path = auxPath;
 
-	
-
-	printf("\n");
-	// solve(0, 0);
+	solve('0', 0);
 
 	printf("Caminos validos = %d\n", num);
 	
