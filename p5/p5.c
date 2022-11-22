@@ -39,10 +39,10 @@ void printAFN() {
 	printf("\nEstado final =");
 	for(char i = 0; fS[i]; ++i) printf(" %c",fS[i]);
 
-	printf("\nDelta:\n");
+	printf("\nDelta:\t");
 	for(char i = 0; deltaTab[i]; ++i)
 		if((i+1)%3 == 0)
-			printf(" %c\n", deltaTab[i]);
+			printf(" %c\n\t", deltaTab[i]);
 		else
 			printf(" %c", deltaTab[i]);
 }
@@ -122,7 +122,7 @@ int main(int argc, char const *argv[]) {
 	if(err)
 		printf("\t(Err) No se encontro el archivo\n");
 	else {
-		printf("Ingrese la cadena a verificar: ");
+		printf("\nIngrese la cadena a verificar: ");
 		fflush(stdin);
 		scanf("%s", str);
 
