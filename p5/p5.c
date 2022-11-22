@@ -130,7 +130,7 @@ int main(int argc, char const *argv[]) {
 		char auxPath[size];
 		path = auxPath;
 
-		solve('0', 0);
+		solve(s, 0);
 
 		printf("Caminos validos = %d\n", num);
 	}
