@@ -4,7 +4,7 @@
 char str[10], *path;
 char size, num = 0;
 
-char *states, *sigmaM, s, *fS, **deltaTab;
+char *states, *sigmaM, s, *fS, (*deltaTab)[3];
 
 char* getFromFile() {
 	FILE *textFile;
@@ -30,49 +30,55 @@ char* getFromFile() {
 	return text;
 }
 
+void printAFN(char x) {
+	printf("\nEstados =");
+	for(char i = 0; states[i]; ++i) printf(" %c", states[i]);
+	
+	printf("\nAlfabeto =");
+	for(char i = 0;sigmaM[i]; ++i) printf(" %c",sigmaM[i]);
+
+	printf("\nEstado inicial = %c", s);
+
+	printf("\nEstado final =");
+	for(char i = 0;fS[i]; ++i) printf(" %c",fS[i]);
+
+	printf("\nDelta:\t");
+	for(char n = 0; n<x; ++n){
+		for(char m = 0; m<3; ++m)
+			printf("%c", deltaTab[n][m]);
+		printf("\n\t");
+	}
+}
+
+char* getInfo(char *text, char *i) {
+	char auxSize;
+	for (auxSize = *i; text[auxSize] != 10; ++auxSize);
+
+	auxSize = (auxSize - *i)/2;
+	char *obj = (char*) malloc((auxSize+1) * sizeof(char));
+	obj[auxSize] = '\0';
+
+	for(char aux = 0; text[*i] != 10; *i+=2, ++aux)
+		obj[aux] = text[*i];
+
+	return obj;
+}
+
 void getAFN() {
 	char *text = getFromFile();
 	char auxSize, aux, i = 0;
+	
+	states = getInfo(text, &i); // states
+	++i;
+	sigmaM = getInfo(text, &i); // alphabet
+	s = text[++i]; // initial state
+	i+=3;
+	fS = getInfo(text, &i); // final states
 
-// states
-	for (auxSize = 0; text[auxSize] != 10; ++auxSize);
-	auxSize /= 2;
-	states = (char*) malloc((auxSize+1) * sizeof(char));
-
-	for(aux = 0; text[i] != 10; i+=2, ++aux) states[aux] = text[i];
-	states[auxSize] = '\0';
-
-	printf("Estados = %s\n", states);
-
-// alphabet
-	for (auxSize = ++i; text[auxSize] != 10; ++auxSize);
-	auxSize = (auxSize-i)/2;
-
-	sigmaM = (char*) malloc((auxSize+1) * sizeof(char));
-	for(aux = 0; text[i] != 10; i+=2, ++aux) sigmaM[aux] = text[i];
-	sigmaM[auxSize] = '\0';
-
-	printf("Alfabeto = %s\n", sigmaM);
-
-// initial state
-	s = text[++i];
-
-	printf("Estado inicial = %c\n", s);
-
-// final states
-	for(auxSize = (i+=3); text[auxSize] != 10; ++auxSize);
-	auxSize = (auxSize-i)/2;
-
-	fS = (char*) malloc((auxSize+1) * sizeof(char));
-	for(aux = 0; text[i] != 10; i+=2, ++aux) fS[aux] = text[i];
-	fS[auxSize] = '\0';
-
-	printf("Estado final = %s\n", fS);
-
-// delta table
+	// delta table
 	char x;
 	for (aux = i, x = 0; text[aux]; ++aux) if(text[aux] == 10) ++x;
-
+	
 	char auxDeltaTab[x][3];
 	for(char n = 0, m = 0, aux = ++i; text[aux]; ++aux)
 		if(text[aux] != 13 && text[aux] != ',') {
@@ -84,13 +90,8 @@ void getAFN() {
 			++n;
 			m = 0;
 		}
-
-	printf("Delta:\n\t");
-	for(char n = 0; n<x; ++n){
-		for(char m = 0; m<3; ++m)
-			printf("%c", auxDeltaTab[n][m]);
-		printf("\n\t");
-	}
+	deltaTab = auxDeltaTab;
+	printAFN(x);
 }
 
 // to be changed
@@ -125,8 +126,7 @@ void getAFN() {
 // }
 
 int main(int argc, char const *argv[]) {
-	printf("Del AFN con:\n");
-
+	printf("Usando el AFN con:\n");
 	getAFN();
 
 	printf("\nIngrese la cadena a verificar: ");
