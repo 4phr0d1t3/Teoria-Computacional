@@ -6,12 +6,12 @@ char size, x, num = 0;
 
 char *states, *sigmaM, s, *fS, *deltaTab;
 
-char* getFromFile() {
+char* getFromFile(const char *nameOfFile) {
 	FILE *textFile;
 	char *text;
 	long numbytes;
 
-	textFile = fopen("AFND.txt", "r");
+	textFile = fopen(nameOfFile, "r");
 	if(textFile == NULL)
 		return 0;
 
@@ -61,8 +61,8 @@ char* getInfo(char *text, char *i) {
 	return obj;
 }
 
-char getAFN() {
-	char *text = getFromFile();
+char getAFN(const char *nameOfFile) {
+	char *text = getFromFile(nameOfFile);
 	if(!text)
 		return 1;
 
@@ -117,8 +117,8 @@ void solve(char state, char deltaPot) {
 }
 
 int main(int argc, char const *argv[]) {
-	printf("Usando el AFN con:\n");
-	char err = getAFN();
+	printf("Usando el AFN '%s' con:", argv[argc-1]);
+	char err = getAFN(argv[argc-1]);
 	if(err)
 		printf("\t(Err) No se encontro el archivo\n");
 	else {
@@ -134,6 +134,5 @@ int main(int argc, char const *argv[]) {
 
 		printf("Caminos validos = %d\n", num);
 	}
-
 	return 0;
 }
