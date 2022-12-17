@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char str[100], *path;
-char size, x, num = 0;
-
-char *states, *sigmaM, s, *fS, *deltaTab;
+char x;
+char states, *sigmaM, s, *fS, *deltaTab;
 
 char* getFromFile(const char *nameOfFile) {
 	FILE *textFile;
@@ -28,8 +26,7 @@ char* getFromFile(const char *nameOfFile) {
 }
 
 void printAFN() {
-	printf("\nEstados =");
-	for(char i = 0; states[i]; ++i) printf(" %c", states[i]);
+	printf("\nEstados = 0 - %d", states);
 	
 	printf("\nAlfabeto =");
 	for(char i = 0; sigmaM[i]; ++i) printf(" %c",sigmaM[i]);
@@ -41,10 +38,14 @@ void printAFN() {
 
 	printf("\nDelta:\t");
 	for(char i = 0; deltaTab[i]; ++i)
-		if((i+1)%3 == 0)
-			printf(" %c\n\t", deltaTab[i]);
+		if(deltaTab[i] == ',')
+			printf("\n\t");
+		else if (deltaTab[i] > 57)
+			printf(" %c ", deltaTab[i]);
+		else if (deltaTab[i] == 32)
+			printf(" ε ");
 		else
-			printf(" %c", deltaTab[i]);
+			printf("%c", deltaTab[i]);
 }
 
 char* getInfo(char *text, char *i) {
@@ -61,15 +62,21 @@ char* getInfo(char *text, char *i) {
 	return obj;
 }
 
-char getAFN(const char *nameOfFile) {
+char getAInf(const char *nameOfFile) {
 	char *text = getFromFile(nameOfFile);
-	if(!text)
-		return 1;
+	if(!text) return 1;
 
 	char auxSize, aux, i = 0;
 
-	states = getInfo(text, &i); // states
-	++i;
+	// states
+	if(text[1]!= 13) {
+		states = (text[0]-48)*10 + (text[1]-48);
+		i = 4;
+	}
+	else {
+		states = text[0]-48;
+		i = 3;
+	}
 	sigmaM = getInfo(text, &i); // alphabet
 	s = text[++i]; // initial state
 	i+=3;
@@ -81,8 +88,11 @@ char getAFN(const char *nameOfFile) {
 
 	char j;
 	for(j = 0, aux = i; text[aux]; ++aux)
-		if(text[aux] != 10 && text[aux] != 13 && text[aux] != ',') {
-			deltaTab[j] = text[aux];
+		if(text[aux] != 13 && text[aux] != ',') {
+			if(text[aux] == 10)
+				deltaTab[j] = ',';
+			else				
+				deltaTab[j] = text[aux];
 			++j;
 		}
 	deltaTab[j] = '\0';
@@ -92,33 +102,8 @@ char getAFN(const char *nameOfFile) {
 	return 0;
 }
 
-// char isFinalState(char state) {
-// 	for(char i = 0; fS[i]; ++i)
-// 		if(state == fS[i])
-// 			return 1;
-// 	return 0;
-// }
-
-// void solve(char state, char deltaPot) {
-// 	if(str[deltaPot]) {
-// 		for(char aux = 0; aux < x; ++aux)
-// 			if(state == deltaTab[aux*3] && str[deltaPot] ==  deltaTab[aux*3+1]) {
-// 				path[deltaPot] = deltaTab[aux*3+2];
-// 				solve(deltaTab[aux*3+2], deltaPot + 1);
-// 			}
-// 	}
-// 	else if(deltaPot == size && isFinalState(state)) {
-// 		printf("Camino Valido:\n\t--> q%c", s);
-// 		for(char i = 0; i<size; ++i)
-// 			printf(" -%c-> q%c", str[i], path[i]);
-// 		printf("\n");
-// 		++num;
-// 	}
-// }
-
 int main(int argc, char const *argv[]) {
-	printf("Usando el AFN '%s' con:", argv[argc-1]);
-	char err = getAFN(argv[argc-1]);
+	char err = getAInf(argv[argc-1]);
 	if(err)
 		printf("\t(Err) No se encontro el archivo\n");
 	else {
