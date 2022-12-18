@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 char states, *sigmaM, s, fS, *deltaTab;
-char rows;
+char rows, numSigmaM;
 
 char* getFromFile(const char *nameOfFile) {
 	FILE *textFile;
@@ -83,7 +83,10 @@ char getAInf(const char *nameOfFile) {
 	else
 		states = text[0]-48;
 
+	numSigmaM = i;
 	sigmaM = getInfo(text, &i); // alphabet
+	numSigmaM = ((numSigmaM*-1)+i)/2;
+
 	s = text[++i]-48; // initial state
 	i+=3;
 
@@ -124,60 +127,90 @@ char getAInf(const char *nameOfFile) {
 	return 0;
 }
 
-void printAFD() {
-	printf("\nDelta del AFD:\nδ");
-	for(char n = 0; sigmaM[n]; ++n)
-		printf("\t%c", sigmaM[n]);
-	printf("\n");
-}
+// void printAFD() {
+// 	printf("\nDelta del AFD:\nδ");
+// 	for(char n = 0; sigmaM[n]; ++n)
+// 		printf("\t%c", sigmaM[n]);
+// 	printf("\n");
+// }
 
 char n;
 
-char isIn(char state, char *exp) {
+char isIn(char state, int *exp) {
 	for(char m = 0; exp[m]; ++m) 
 		if(exp[m] == state)
 			return 1;
 	return 0;
 }
 
-void epsilonLock(char actState, char *exp) {
-	exp[n] = actState;
-	exp[n+1] = '\0';
-	++n;
-	for(char n = 0; n<rows; ++n)
-		if(deltaTab[n*4] == actState && deltaTab[n*4+1] == 32 && !isIn(deltaTab[n*4+2], exp))
-			epsilonLock(deltaTab[n*4+2], exp);
+void epsilonLock(char actState, int *set, char num) {
+	for(char i = 0; i<rows; ++i)
+		if(deltaTab[i*4] == actState && deltaTab[i*4+1] == 32) {
+			set[(num*(states+1))+deltaTab[i*4+2]] = 1;
+			epsilonLock(deltaTab[i*4+2], set, num);
+		}
 }
 
-char move(char *set, char delta) {
-	for(char i = 0; set[i]; ++i)
-		for(char j = 0; j<rows; ++j)
-			if(deltaTab[j*4] == set[i] && deltaTab[j*4+1] == delta)
-				return deltaTab[j*4+2];
+char move(int *set, char delta, char num) {
+	for(char j = 0; j<rows; ++j)
+		if(set[num*states+deltaTab[j*4]] && deltaTab[j*4+1] == delta)
+			return deltaTab[j*4+2];
 	return 0;
 }
 
-void go2(char *eL) {
-	for(char i = 0; eL[i]; ++i)
-		printf(" %d", eL[i]);
+void go2(int *set, char num) {
+	char whereTo[states];
+	printf("\n\tNow:");
+	for(char i = 1; i<=states; ++i) {
+		printf("\t%d", set[num*states+i]);
+		// whereTo[i-1] = 0;
+	}
+	printf("\n");
 
 	for(char j = 0; sigmaM[j]; ++j) {
-		printf("\nSearching for %c", sigmaM[j]);
-		if(move(eL, sigmaM[j]) != 0) {
-			printf("\n%d", move(eL, sigmaM[j]));
+		printf("Searching for %c\n", sigmaM[j]);
+		if(move(set, sigmaM[j], num) != 0) {
+			// whereTo[move(set, sigmaM[j], num)] = 1;
+			printf("%d\n", move(set, sigmaM[j], num));
 		}
 	}
+	// printf("\n\t");
+	// for(char i = 0; i<states; ++i)
+		// printf("\t%d", whereTo[i]);
+	printf("\n");
 }
 
 void toAFD() {
+	int sets[(states+1)*states];
+	for(int i = 0; i<(states+1)*states; ++i)
+		sets[i] = 0;
+
+	// for(char i = 0; sets[i]; ++i) {
+	// 	printf("%d ", sets[i]);
+	// 	if(i%4 == 0)
+	// 		printf("\n");
+	// }
+
 	char exp[rows+1];
 	exp[1] = '\0';
-	n = 0;
-	epsilonLock(s, exp);
-	// for(char o = 0; exp[o];++o) printf(" %d", exp[o]);
-	go2(exp);
+	sets[0] = 1;
+	n = 1;
 
-	printAFD();
+	printf("\tSet");
+	for(int i = 0; i<states; ++i)
+		printf("\t%d", i+1);
+	sets[s] = 1;
+	epsilonLock(s, sets, 0);
+
+	for(int i = 0; i<(states+1)*states; ++i) {
+		if(i%(states+1) == 0)
+			printf("\n");
+		printf("\t%d", sets[i]);
+	}
+	char whereTo[states];
+	go2(sets, 0);
+
+	// printAFD();
 }
 
 int main(int argc, char const *argv[]) {
