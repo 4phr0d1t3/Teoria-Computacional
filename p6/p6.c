@@ -38,15 +38,22 @@ void printAInf() {
 	for(char i = 0; fS[i]; ++i) printf(" %c",fS[i]);
 
 	printf("\nDelta:\t");
+	char flg = 1;
 	for(char n = 0; deltaTab[n]!='\0'; ++n)
 		if(deltaTab[n] == ',')
 			printf("\n\t");
-		else if(deltaTab[n] == 32)
+		else if(deltaTab[n] == 32) {
 			printf("ε\t");
-		else if(deltaTab[n] < 32)
+			flg = 2;
+		}
+		else if(flg != 0) {
 			printf("%d\t", deltaTab[n]);
-		else
+			--flg;
+		}
+		else {
 			printf("%c\t", deltaTab[n]);
+			flg = 2;
+		}
 }
 
 char* getInfo(char *text, char *i) {
