@@ -73,6 +73,7 @@ char getAInf(const char *nameOfFile) {
 
 	char auxSize, i = 3;
 	int aux;
+
 	// states
 	if(text[1]!= 13) {
 		states = (text[0]-48)*10 + (text[1]-48);
@@ -123,12 +124,24 @@ char getAInf(const char *nameOfFile) {
 	return 0;
 }
 
+void printAFD() {
+	printf("Delta del AFD:\nδ");
+	for(char n = 0; sigmaM[n]; ++n)
+		printf("\t%c", sigmaM[n]);
+	printf("\n");
+}
+void toAFD() {
+	
+	printAFD();
+}
+
 int main(int argc, char const *argv[]) {
 	char err = getAInf(argv[argc-1]);
 	if(err)
 		printf("\t(Err) No se encontro el archivo\n");
 	else {
 		printf("\nPasando a AFD...\n\n");
+		toAFD();
 	}
 	return 0;
 }
