@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 char states, *sigmaM, s, fS, *deltaTab;
+char rows;
 
 char* getFromFile(const char *nameOfFile) {
 	FILE *textFile;
@@ -30,13 +31,13 @@ void printAInf() {
 	printf("\nAlfabeto =");
 	for(char i = 0; sigmaM[i]; ++i) printf(" %c",sigmaM[i]);
 
-	printf("\nEstado inicial = %c", s);
+	printf("\nEstado inicial = %d", s);
 
 	printf("\nEstado final = %d", fS);
 
 	printf("\nDelta:\t");
 	char flg = 1;
-	for(char n = 0; deltaTab[n]!='\0'; ++n)
+	for(char n = 0; deltaTab[n]; ++n)
 		if(deltaTab[n] == ',')
 			printf("\n\t");
 		else if(deltaTab[n] == 32) {
@@ -83,7 +84,7 @@ char getAInf(const char *nameOfFile) {
 		states = text[0]-48;
 
 	sigmaM = getInfo(text, &i); // alphabet
-	s = text[++i]; // initial state
+	s = text[++i]-48; // initial state
 	i+=3;
 
 	// final state
@@ -95,10 +96,9 @@ char getAInf(const char *nameOfFile) {
 		fS = text[i]-48;
 
 	// delta table
-	char x;
-	for (aux = i+=3, x = 1; text[aux]; ++aux) if(text[aux] == 13) ++x;
+	for (aux = i+=3, rows = 1; text[aux]; ++aux) if(text[aux] == 13) ++rows;
 	printf("\n");
-	deltaTab = (char *) malloc((x*3+1)*sizeof(char));
+	deltaTab = (char *) malloc((rows*3+1)*sizeof(char));
 
 	char j;
 	for(j = 0, aux = i; text[aux]; ++aux)
@@ -125,13 +125,58 @@ char getAInf(const char *nameOfFile) {
 }
 
 void printAFD() {
-	printf("Delta del AFD:\nδ");
+	printf("\nDelta del AFD:\nδ");
 	for(char n = 0; sigmaM[n]; ++n)
 		printf("\t%c", sigmaM[n]);
 	printf("\n");
 }
+
+char n;
+
+char isIn(char state, char *exp) {
+	for(char m = 0; exp[m]; ++m) 
+		if(exp[m] == state)
+			return 1;
+	return 0;
+}
+
+void epsilonLock(char actState, char *exp) {
+	exp[n] = actState;
+	exp[n+1] = '\0';
+	++n;
+	for(char n = 0; n<rows; ++n)
+		if(deltaTab[n*4] == actState && deltaTab[n*4+1] == 32 && !isIn(deltaTab[n*4+2], exp))
+			epsilonLock(deltaTab[n*4+2], exp);
+}
+
+char move(char *set, char delta) {
+	for(char i = 0; set[i]; ++i)
+		for(char j = 0; j<rows; ++j)
+			if(deltaTab[j*4] == set[i] && deltaTab[j*4+1] == delta)
+				return deltaTab[j*4+2];
+	return 0;
+}
+
+void go2(char *eL) {
+	for(char i = 0; eL[i]; ++i)
+		printf(" %d", eL[i]);
+
+	for(char j = 0; sigmaM[j]; ++j) {
+		printf("\nSearching for %c", sigmaM[j]);
+		if(move(eL, sigmaM[j]) != 0) {
+			printf("\n%d", move(eL, sigmaM[j]));
+		}
+	}
+}
+
 void toAFD() {
-	
+	char exp[rows+1];
+	exp[1] = '\0';
+	n = 0;
+	epsilonLock(s, exp);
+	// for(char o = 0; exp[o];++o) printf(" %d", exp[o]);
+	go2(exp);
+
 	printAFD();
 }
 
