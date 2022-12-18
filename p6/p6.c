@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char x;
-char states, *sigmaM, s, *fS, *deltaTab;
-char *deltaTabAux;
+char states, *sigmaM, s, fS, *deltaTab;
 
 char* getFromFile(const char *nameOfFile) {
 	FILE *textFile;
@@ -34,8 +32,7 @@ void printAInf() {
 
 	printf("\nEstado inicial = %c", s);
 
-	printf("\nEstado final =");
-	for(char i = 0; fS[i]; ++i) printf(" %c",fS[i]);
+	printf("\nEstado final = %d", fS);
 
 	printf("\nDelta:\t");
 	char flg = 1;
@@ -43,7 +40,7 @@ void printAInf() {
 		if(deltaTab[n] == ',')
 			printf("\n\t");
 		else if(deltaTab[n] == 32) {
-			printf("ε\t");
+			printf("-\t"); // ε
 			flg = 2;
 		}
 		else if(flg != 0) {
@@ -74,26 +71,33 @@ char getAInf(const char *nameOfFile) {
 	char *text = getFromFile(nameOfFile);
 	if(!text) return 1;
 
-	char auxSize, aux, i = 0;
-
+	char auxSize, i = 3;
+	int aux;
 	// states
 	if(text[1]!= 13) {
 		states = (text[0]-48)*10 + (text[1]-48);
-		i = 4;
+		++i;
 	}
-	else {
+	else
 		states = text[0]-48;
-		i = 3;
-	}
+
 	sigmaM = getInfo(text, &i); // alphabet
 	s = text[++i]; // initial state
 	i+=3;
-	fS = getInfo(text, &i); // final states
+
+	// final state
+	if(text[i+1]!= 13) {
+		fS = (text[i]-48)*10 + (text[i+1]-48);
+		++i;
+	}
+	else
+		fS = text[i]-48;
 
 	// delta table
-	for (aux = ++i, x = 1; text[aux]; ++aux) if(text[aux] == 10) ++x;
+	char x;
+	for (aux = i+=3, x = 1; text[aux]; ++aux) if(text[aux] == 13) ++x;
+	printf("\n");
 	deltaTab = (char *) malloc((x*3+1)*sizeof(char));
-	deltaTabAux = (char *) malloc((x*3+1)*sizeof(char));
 
 	char j;
 	for(j = 0, aux = i; text[aux]; ++aux)
