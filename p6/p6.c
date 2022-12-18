@@ -3,6 +3,7 @@
 
 char x;
 char states, *sigmaM, s, *fS, *deltaTab;
+char *deltaTabAux;
 
 char* getFromFile(const char *nameOfFile) {
 	FILE *textFile;
@@ -25,8 +26,8 @@ char* getFromFile(const char *nameOfFile) {
 	return text;
 }
 
-void printAFN() {
-	printf("\nEstados = 0 - %d", states);
+void printAInf() {
+	printf("\nEstados = 1 - %d", states);
 	
 	printf("\nAlfabeto =");
 	for(char i = 0; sigmaM[i]; ++i) printf(" %c",sigmaM[i]);
@@ -37,15 +38,15 @@ void printAFN() {
 	for(char i = 0; fS[i]; ++i) printf(" %c",fS[i]);
 
 	printf("\nDelta:\t");
-	for(char i = 0; deltaTab[i]; ++i)
-		if(deltaTab[i] == ',')
+	for(char n = 0; deltaTab[n]!='\0'; ++n)
+		if(deltaTab[n] == ',')
 			printf("\n\t");
-		else if (deltaTab[i] > 57)
-			printf(" %c ", deltaTab[i]);
-		else if (deltaTab[i] == 32)
-			printf(" ε ");
+		else if(deltaTab[n] == 32)
+			printf("ε\t");
+		else if(deltaTab[n] < 32)
+			printf("%d\t", deltaTab[n]);
 		else
-			printf("%c", deltaTab[i]);
+			printf("%c\t", deltaTab[n]);
 }
 
 char* getInfo(char *text, char *i) {
@@ -85,19 +86,28 @@ char getAInf(const char *nameOfFile) {
 	// delta table
 	for (aux = ++i, x = 1; text[aux]; ++aux) if(text[aux] == 10) ++x;
 	deltaTab = (char *) malloc((x*3+1)*sizeof(char));
+	deltaTabAux = (char *) malloc((x*3+1)*sizeof(char));
 
 	char j;
 	for(j = 0, aux = i; text[aux]; ++aux)
 		if(text[aux] != 13 && text[aux] != ',') {
 			if(text[aux] == 10)
 				deltaTab[j] = ',';
-			else				
+			else if(text[aux] > 47 && text[aux] < 58) {
+				if(text[aux+1] > 47 && text[aux+1] < 58) {
+					deltaTab[j] = (text[aux] - 48)*10 + text[aux+1] - 48;
+					++aux;
+				}
+				else
+					deltaTab[j] = text[aux] - 48;
+			}
+			else
 				deltaTab[j] = text[aux];
 			++j;
 		}
 	deltaTab[j] = '\0';
 
-	printAFN();
+	printAInf();
 
 	return 0;
 }
