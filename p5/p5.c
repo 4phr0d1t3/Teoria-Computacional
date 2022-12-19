@@ -108,9 +108,9 @@ void solve(char state, char deltaPot) {
 			}
 	}
 	else if(deltaPot == size && isFinalState(state)) {
-		printf("Camino Valido:\n\t--> q%c", s);
+		printf("Camino Valido:\n\t--> %c", s);
 		for(char i = 0; i<size; ++i)
-			printf(" -%c-> q%c", str[i], path[i]);
+			printf(" -%c-> %c", str[i], path[i]);
 		printf("\n");
 		++num;
 	}
