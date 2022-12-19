@@ -136,9 +136,9 @@ char getAInf(const char *nameOfFile) {
 
 char n;
 
-char isIn(char state, int *exp) {
-	for(char m = 0; exp[m]; ++m) 
-		if(exp[m] == state)
+char isIn(char state, int *set) {
+	for(char m = 0; set[m]; ++m) 
+		if(set[m] == state)
 			return 1;
 	return 0;
 }
@@ -151,33 +151,107 @@ void epsilonLock(char actState, int *set, char num) {
 		}
 }
 
-char move(int *set, char delta, char num) {
+void move(int *set, char num, int *whereTo, char numWhere, char delta) {
 	for(char j = 0; j<rows; ++j)
-		if(set[num*states+deltaTab[j*4]] && deltaTab[j*4+1] == delta)
-			return deltaTab[j*4+2];
-	return 0;
+		if(set[num*(states+1)+deltaTab[j*4]] && deltaTab[j*4+1] == delta)
+			whereTo[numWhere*(states+1)+deltaTab[j*4+2]] = 1;
+}
+
+char numLetters = 0;
+
+void newLetter(int *set, int *movement) {
+	char newLetters[3] = {0, 0, 0};
+	char repeated[3] = {0, 0, 0};
+	char numRep = 0;
+	char isZero = 0;
+	// for(char k = 0; k<states; ++k)
+
+	for(char i = 0; i<numSigmaM; ++i)
+		for(char j = 0; set[j*(states+1)]; ++j)
+			for(char k = 0; k<states+1; ++k)
+				if(movement[i*(states+1)+k] != set[j*(states+1)+k]) {
+					break;
+				}
+				else if(k = states)
+					repeated[i] = j*(states+1);
+	for(char i = 0; i<numSigmaM; ++i) {
+		for(char k = 0; k<states; ++k) {
+			if(movement[i*(states+1)+k]) {
+				printf("\nno es 0 %d\n", i);
+				break;
+			}
+			else if(k == states-1) {
+				repeated[i] = -1;
+				++numRep;
+			}
+			printf("%d", movement[i*(states+1)+k]);
+		}
+		printf("\n");
+	}
+	
+	// printf("\nrepeated: %d", numRep);
+	printf("\nrepeated:");
+	for(char i = 0; i<numSigmaM; ++i)
+		printf(" %d", repeated[i]);
+	printf("\n");
+
+	// printf("%d\n", numLetters);
+	for(char i = 0; i<numSigmaM; ++i) {
+		if(repeated[i] == 0) {
+			set[(i+numLetters-numRep)*(states+1)] = 1;
+			for(char j = 1; j<states+1; ++j)
+				set[j+(i+numLetters-numRep)*(states+1)] = movement[j+i*(states+1)];
+			// printf("\n");
+		}
+	}
+	numLetters+= numSigmaM - numRep;
+	// printf("\n numLett: %d", numLetters);
+
+	for(int i = 0; i<(states+1)*states; ++i) {
+		if(i%(states+1) == 0)
+			printf("\n");
+		printf("\t%d", set[i]);
+	}
+	printf("\n");
 }
 
 void go2(int *set, char num) {
-	char whereTo[states];
-	printf("\n\tNow:");
-	for(char i = 1; i<=states; ++i) {
-		printf("\t%d", set[num*states+i]);
-		// whereTo[i-1] = 0;
-	}
-	printf("\n");
+	int whereTo[(states+1)*numSigmaM];
 
-	for(char j = 0; sigmaM[j]; ++j) {
-		printf("Searching for %c\n", sigmaM[j]);
-		if(move(set, sigmaM[j], num) != 0) {
-			// whereTo[move(set, sigmaM[j], num)] = 1;
-			printf("%d\n", move(set, sigmaM[j], num));
-		}
-	}
-	// printf("\n\t");
-	// for(char i = 0; i<states; ++i)
-		// printf("\t%d", whereTo[i]);
-	printf("\n");
+	for(int i = 0; i<(states+1)*numSigmaM; ++i)
+		whereTo[i] = 0;
+	
+	// printf("\nWhere To");
+	for(int i = 0; sigmaM[i]; ++i)
+		move(set, num, whereTo, i, sigmaM[i]);
+
+	// for(int i = 0; i<(states+1)*numSigmaM; ++i) {
+	// 	if(i%(states+1) == 0)
+	// 		printf("\n");
+	// 	printf("\t%d", whereTo[i]);
+	// }
+	
+	for(int i = 0; i<numSigmaM; ++i)
+		for (int j = 0; j < states+1; ++j)
+			if(whereTo[i*(states+1)+j])
+				epsilonLock(j, whereTo, i);
+
+	// printf("\nWhere To New");
+	// for(int i = 0; i<(states+1)*numSigmaM; ++i) {
+	// 	if(i%(states+1) == 0)
+	// 		printf("\n");
+	// 	printf("\t%d", whereTo[i]);
+	// }
+	// printf("\n");
+	newLetter(set, whereTo);
+}
+
+void repeat(int * set) {
+	// for(char i = 0; set[i*(states+1)] == 1; ++i)
+	// 	go2(set, i);
+	go2(set, 0);
+	go2(set, 1);
+	// go2(set, 2);
 }
 
 void toAFD() {
@@ -185,30 +259,20 @@ void toAFD() {
 	for(int i = 0; i<(states+1)*states; ++i)
 		sets[i] = 0;
 
-	// for(char i = 0; sets[i]; ++i) {
-	// 	printf("%d ", sets[i]);
-	// 	if(i%4 == 0)
-	// 		printf("\n");
-	// }
-
-	char exp[rows+1];
-	exp[1] = '\0';
-	sets[0] = 1;
-	n = 1;
-
 	printf("\tSet");
 	for(int i = 0; i<states; ++i)
 		printf("\t%d", i+1);
+	sets[0] = 1;
 	sets[s] = 1;
 	epsilonLock(s, sets, 0);
-
+	++numLetters;
 	for(int i = 0; i<(states+1)*states; ++i) {
 		if(i%(states+1) == 0)
 			printf("\n");
 		printf("\t%d", sets[i]);
 	}
-	char whereTo[states];
-	go2(sets, 0);
+	printf("\n");
+	repeat(sets);
 
 	// printAFD();
 }
@@ -218,7 +282,7 @@ int main(int argc, char const *argv[]) {
 	if(err)
 		printf("\t(Err) No se encontro el archivo\n");
 	else {
-		printf("\nPasando a AFD...\n\n");
+		printf("\n\nPasando a AFD...\n\n");
 		toAFD();
 	}
 	return 0;
