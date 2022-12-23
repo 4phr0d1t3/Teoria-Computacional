@@ -233,9 +233,13 @@ void repeat(int * set) {
 
 	printf("\nEstado inicial: A\n");
 	printf("Estados finales: ");
-	for (char j = 0; set[j*(states+1)]; ++j)
-		if(set[j*(states+1)+fS+1] == 1)
+	for (char j = 0; set[j*(states+1)]; ++j) {
+		if(set[j*(states)+fS+1] == 1) {
+			printf("%d, %d = ", j*(states)+fS+1, set[j*(states)+fS+1]);
 			printf(" %c", j+65);
+		}
+		printf(";");
+	}
 	printf("\n");
 }
 
